@@ -49,7 +49,7 @@ const Hero = ({
   },
 }: HeroProps) => {
   return (
-    <section className="py-32">
+    <section className="py-20 lg:py-32">
       <div className="container">
         <div className="grid items-center gap-8 lg:grid-cols-2">
           <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
@@ -61,7 +61,7 @@ const Hero = ({
                 </a>
               </Badge>
             )}
-            <h1 className="my-6 text-pretty text-4xl font-bold lg:text-6xl" style={{color: "#099584"}}>
+            <h1 className="my-6 text-pretty text-4xl text-start font-bold lg:text-6xl" style={{color: "#099584"}}>
               {heading}
             </h1>
             <p className="text-muted-foreground mb-8 max-w-xl lg:text-xl">

@@ -7,9 +7,9 @@ import { estadoCivil } from '@/constants/estadoCivil'
 const tieneHijosSchema = z.discriminatedUnion("tiene_hijos", [
    z.object({
       tiene_hijos: z.literal(true),
-      numero_hijos: z.number({
+      numero_hijos: z.string({
          message: "Este campo es obligatorio."
-      }).refine(val => !isNaN(val) && val > 0, {
+      }).refine(val => !isNaN(Number(val)) && Number(val) > 0, {
          message: "Este campo es obligatorio y mayor a 0.",
       }),
    }),
@@ -32,76 +32,87 @@ export const PostulanteSchema = z.object({
       message: "El primer nombre debe tener al menos 1 carácter."
    }).max(50, {
       message: "El primer nombre no debe superar 50 caracteres."
-   }),
+   }).transform((val) => val.trim().toUpperCase()),
    segundo_nombre: z.string().max(50, {
       message: "El segundo nombre no debe superar 50 caracteres."
-   }).optional().or(z.literal("")), // Permite vacío sin marcar error
+   }).transform((val) => val.trim().toUpperCase())
+      .optional().or(z.literal("")), // Permite vacío sin marcar error
    primer_apellido: z.string().min(1, {
       message: "El primer apellido debe tener al menos 1 carácter."
    }).max(50, {
       message: "El primer apellido no debe superar 50 caracteres."
-   }),
+   }).transform((val) => val.trim().toUpperCase()),
    segundo_apellido: z.string().max(50, {
       message: "El segundo apellido no debe superar 50 caracteres."
-   }).optional().or(z.literal("")), // Permite vacío sin marcar error
-   fecha_nacimiento: z.date({
-      message: "La fecha de nacimiento es requerida.",
-   }),
+   }).transform((val) => val.trim().toUpperCase())
+      .optional().or(z.literal("")), // Permite vacío sin marcar error
+   fecha_nacimiento: z.date({ message: "La fecha de nacimiento es requerida." }).max(
+      new Date(
+         new Date().getFullYear() - 18,
+         new Date().getMonth(),
+         new Date().getDate()
+      ),
+      { message: "Debes ser mayor de 18 años." }
+   ),
    pais_nacimiento: z.string().min(1, {
       message: "El país de nacimiento debe tener al menos 1 carácter.",
    }).max(100, {
       message: "El país de nacimiento debe tener como máximo 100 caracteres.",
-   }),
+   }).transform((val) => val.trim().toUpperCase()),
    departamento_nacimiento: z.string().min(1, {
       message: "El departamento de nacimiento debe tener al menos 1 carácter.",
    }).max(100, {
       message: "El departamento de nacimiento debe tener como máximo 100 caracteres.",
-   }),
+   }).transform((val) => val.trim().toUpperCase()),
    ciudad_nacimiento: z.string().min(1, {
       message: "La ciudad de nacimiento debe tener al menos 1 carácter.",
    }).max(100, {
       message: "La ciudad de nacimiento debe tener como máximo 100 caracteres.",
-   }),
+   }).transform((val) => val.trim().toUpperCase()),
    barrio_residencia: z.string().min(1, {
       message: "El barrio de residencia debe tener al menos 1 carácter.",
    }).max(100, {
       message: "El barrio de residencia debe tener como máximo 100 caracteres.",
-   }),
+   }).transform((val) => val.trim().toUpperCase()),
    direccion_residencia: z.string().min(1, {
       message: "La dirección de residencia debe tener al menos 1 carácter.",
    }).max(100, {
       message: "La dirección de residencia debe tener como máximo 100 caracteres.",
-   }),
+   }).transform((val) => val.trim().toUpperCase()),
    ciudad_residencia: z.string().min(1, {
       message: "La ciudad de residencia debe tener al menos 1 carácter.",
    }).max(100, {
       message: "La ciudad de residencia debe tener como máximo 100 caracteres.",
-   }),
+   }).transform((val) => val.trim().toUpperCase()),
    departamento_residencia: z.string().min(1, {
       message: "El departamento de residencia debe tener al menos 1 carácter.",
    }).max(100, {
       message: "El departamento de residencia debe tener como máximo 100 caracteres.",
-   }),
+   }).transform((val) => val.trim().toUpperCase()),
    barrio_correspondencia: z.string().min(1, {
       message: "El barrio de correspondencia debe tener al menos 1 carácter.",
    }).max(100, {
       message: "El barrio de correspondencia debe tener como máximo 100 caracteres.",
-   }).optional().or(z.literal("")), // Permite vacío sin marcar error
+   }).transform((val) => val.trim().toUpperCase())
+      .optional().or(z.literal("")), // Permite vacío sin marcar error
    direccion_correspondencia: z.string().min(1, {
       message: "La dirección de correspondencia debe tener al menos 1 carácter.",
    }).max(100, {
       message: "La dirección de correspondencia debe tener como máximo 100 caracteres.",
-   }).optional().or(z.literal("")), // Permite vacío sin marcar error
+   }).transform((val) => val.trim().toUpperCase())
+      .optional().or(z.literal("")), // Permite vacío sin marcar error
    ciudad_correspondencia: z.string().min(1, {
       message: "La ciudad de correspondencia debe tener al menos 1 carácter.",
    }).max(100, {
       message: "La ciudad de correspondencia debe tener como máximo 100 caracteres.",
-   }).optional().or(z.literal("")), // Permite vacío sin marcar error
+   }).transform((val) => val.trim().toUpperCase())
+      .optional().or(z.literal("")), // Permite vacío sin marcar error
    departamento_correspondencia: z.string().min(1, {
       message: "El departamento de correspondencia debe tener al menos 1 carácter.",
    }).max(100, {
       message: "El departamento de correspondencia debe tener como máximo 100 caracteres.",
-   }).optional().or(z.literal("")), // Permite vacío sin marcar error
+   }).transform((val) => val.trim().toUpperCase())
+      .optional().or(z.literal("")), // Permite vacío sin marcar error
    sexo: z.enum(
       sexo.map(option => option.value) as [string, ...string[]], {
       message: "Seleccione su sexo."
@@ -114,26 +125,28 @@ export const PostulanteSchema = z.object({
       estadoCivil.map(option => option.value) as [string, ...string[]], {
       message: "Seleccione su estado civil."
    }),
-   personas_a_cargo: z.number().min(1, {
-      message: "El número de personas a cargo debe ser al menos 1.",
-   }).max(100, {
-      message: "El número de personas a cargo debe ser como máximo 100.",
-   }),
-   celular: z.string().min(1, {
-      message: "El celular debe tener al menos 1 carácter."
+   personas_a_cargo: z.string().optional()
+      .refine((val) => val === undefined || val === "" || (!isNaN(Number(val)) && Number(val) >= 0 && Number(val) <= 10), {
+         message: "Debe ser un número entre 0 y 10",
+      }),
+   celular: z.string().min(10, {
+      message: "El celular debe tener minimo 10 carácteres."
    }).max(10, {
       message: "El celular no debe superar 10 caracteres."
    }),
-   correo: z.email().min(1, {
+   correo: z.email({
+      message: "Correo electrónico inválido. @correo.com"
+   }).min(1, {
       message: "El correo debe tener al menos 1 carácter."
    }).max(100, {
       message: "El correo no debe superar 100 caracteres."
-   }),
-   telefono: z.string().min(1, {
-      message: "El teléfono debe tener al menos 1 carácter."
-   }).max(15, {
-      message: "El teléfono no debe superar 15 caracteres."
-   }).optional().or(z.literal("")), // Permite vacío sin marcar error
+   }).transform((val) => val.trim().toLowerCase()),
+   telefono: z.string()
+      .regex(/^(?:\+57)?(?:\d{7,10})$/, {
+         message: "El teléfono fijo debe tener 7 a 10 dígitos, con o sin prefijo +57."
+      })
+      .optional()
+      .or(z.literal("")), // permite vacío
 }).and(tieneHijosSchema);
 
 export type PostulanteSchemaType = z.infer<typeof PostulanteSchema>;
