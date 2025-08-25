@@ -1,10 +1,17 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import { useMemo, useEffect, useState } from "react";
 import { format } from "date-fns"
-import { CalendarIcon } from "lucide-react"
+import { CalendarIcon, Info, Send, Loader2Icon } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { toast } from "sonner"
+import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Calendar } from "@/components/ui/calendar"
+import { Separator } from "@/components/ui/separator"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import {
    Card,
    CardContent,
@@ -12,7 +19,6 @@ import {
    CardHeader,
    CardTitle,
 } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import {
    Form,
    FormControl,
@@ -34,17 +40,8 @@ import {
    PopoverContent,
    PopoverTrigger,
 } from "@/components/ui/popover"
-import { Calendar } from "@/components/ui/calendar"
-import { Separator } from "@/components/ui/separator"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import {
-   Tooltip,
-   TooltipContent,
-   TooltipTrigger,
-} from "@/components/ui/tooltip"
-import { Checkbox } from "@/components/ui/checkbox"
+
 import { Loader } from '@/components/loader'
-import { Info, Send } from 'lucide-react'
 
 import { usePostulanteForm } from '@/hooks/usePostulanteForm'
 import { PostulanteSchemaType } from '@/schemas/postulanteSchema'
@@ -82,6 +79,7 @@ export function PostulanteForm({ className, ...props }: React.ComponentProps<"di
    // 2. Watch form fields.
    const tieneHijos = form.watch("tiene_hijos")
    const [loading, setLoading] = useState(false);
+   const router = useRouter();
 
    // 3. Define your select options.
    const selectOptionsTipoDocumento = useSelectOptions(tipoDocumento);
@@ -104,28 +102,57 @@ export function PostulanteForm({ className, ...props }: React.ComponentProps<"di
       setLoading(true);
 
       try {
-         const response = await fetch(`http://localhost:4000/api/postulante`, {
+         const response = await fetch("http://localhost:4000/api/postulante", {
             method: "POST",
-            headers: {
-               "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(values),
          });
 
          const data = await response.json();
-         console.log(data);
+         // console.log(data);
 
          if (!response.ok) {
-            setLoading(false);
+            // error de backend, pero no 200/201
+            toast.error(data.message || "Error en el servidor");
             return;
          }
 
+         // manejar casos esperados
+         switch (data.status) {
+            case 201:
+               toast.success(data.message || "Registro exitoso");
+               setTimeout(() => form.reset(), 1500);
+               break;
+
+            case 200:
+               toast.info(data.message || "Registro actualizado");
+               setTimeout(() => form.reset(), 1500);
+               break;
+
+            default:
+               toast.error(data.message || "Error");
+               break;
+         }
+
+         // ✅ Redirección condicional según estado_civil
+         const estadoCivil = values.estado_civil?.toLowerCase()
+
          setTimeout(() => {
-            setLoading(false);
-            form.reset();
-         }, 1500);
+            if (estadoCivil === "casado" || estadoCivil === "union libre") {
+               router.push("http://localhost:3000/postulante-conyuge")
+            } else {
+               router.push("http://localhost:3000/vacunas-covid")
+            }
+            form.reset()
+         }, 1500)
       } catch (error) {
          console.error("Error al enviar datos:", error);
+         toast.error("Error de conexión", {
+            description: "No se pudo enviar la información al servidor.",
+         });
+      } finally {
+         // esto SIEMPRE se ejecuta (éxito o error)
+         console.log(">>> finally ejecutado");
          setLoading(false);
       }
    }
@@ -402,14 +429,7 @@ export function PostulanteForm({ className, ...props }: React.ComponentProps<"di
                            </div>
                            <Separator />
                            <Alert variant="default">
-                              <Tooltip>
-                                 <TooltipTrigger asChild>
-                                    <Info className="h-4 w-4 cursor-pointer" />
-                                 </TooltipTrigger>
-                                 <TooltipContent side="left" className="bg-white text-black">
-                                    <p>Ejemplo de formato: Cra. 8 #10-47, Barrio La Merced, Cali</p>
-                                 </TooltipContent>
-                              </Tooltip>
+                              <Info className="h-4 w-4" />
                               <AlertTitle>
                                  Dirección de residencia
                               </AlertTitle>
@@ -815,9 +835,18 @@ export function PostulanteForm({ className, ...props }: React.ComponentProps<"di
                                  </div>
                               )}
                            </div>
-                           <Button type="submit" className="w-full" >
-                              <Send />
-                              Enviar
+                           <Button type="submit" className="w-full text-white" disabled={loading}>
+                              {loading ? (
+                                 <>
+                                    <Loader2Icon className="animate-spin" />
+                                    Enviando...
+                                 </>
+                              ) : (
+                                 <>
+                                    <Send />
+                                    Enviar
+                                 </>
+                              )}
                            </Button>
                            <Separator />
                         </div>
