@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { useMemo, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { format } from "date-fns"
 import { CalendarIcon, Info, Send, Loader2Icon } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -31,7 +31,6 @@ import {
 import {
    Select,
    SelectContent,
-   SelectItem,
    SelectTrigger,
    SelectValue,
 } from "@/components/ui/select"
@@ -49,27 +48,7 @@ import { tipoDocumento } from '@/constants/tipoDocumento'
 import { sexo } from '@/constants/sexo'
 import { tipoSangre } from '@/constants/tipoSangre'
 import { estadoCivil } from '@/constants/estadoCivil'
-
-type Option = {
-   value: string;
-   label: string;
-};
-
-export const useSelectOptions = (options: Option[]) => {
-   return useMemo(() => {
-      return options.length > 0 ? (
-         options.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-               {option.label}
-            </SelectItem>
-         ))
-      ) : (
-         <SelectItem value="no-options" disabled>
-            No hay opciones disponibles
-         </SelectItem>
-      );
-   }, [options]);
-};
+import { useSelectOptions } from "@/hooks/useSelectOptions";
 
 export function PostulanteForm({ className, ...props }: React.ComponentProps<"div">) {
 
@@ -153,7 +132,9 @@ export function PostulanteForm({ className, ...props }: React.ComponentProps<"di
       } finally {
          // esto SIEMPRE se ejecuta (éxito o error)
          console.log(">>> finally ejecutado");
-         setLoading(false);
+         setTimeout(() => {
+            setLoading(false);
+         }, 1500);
       }
    }
 

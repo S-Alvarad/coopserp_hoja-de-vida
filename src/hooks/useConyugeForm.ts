@@ -1,11 +1,11 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { PostulanteSchema, PostulanteSchemaType } from '@/schemas/postulanteSchema'
+import { ConyugeSchema, ConyugeSchemaType } from '@/schemas/conyugeSchema'
 
-export function usePostulanteForm() {
-   return useForm<PostulanteSchemaType>({
+export function useConyugeForm() {
+   return useForm<ConyugeSchemaType>({
       mode: "onChange",
-      resolver: zodResolver(PostulanteSchema),
+      resolver: zodResolver(ConyugeSchema),
       defaultValues: {
          tipo_documento: "CC",
          numero_documento: "1143994968",
@@ -21,18 +21,7 @@ export function usePostulanteForm() {
          direccion_residencia: "Calle 33b #12A 15",
          ciudad_residencia: "cali",
          departamento_residencia: "valle del cauca",
-         barrio_correspondencia: "villacolombia",
-         direccion_correspondencia: "Calle 33b #12A 15",
-         ciudad_correspondencia: "cali",
-         departamento_correspondencia: "valle del cauca",
-         sexo: "M",
-         tipo_sangre: "O+",
-         estado_civil: "CASADO",
-         personas_a_cargo: "0",
-         celular: "3192976668",
-         correo: "steven.alvarado@example.com",
-         telefono: "",
-         tiene_hijos: false,
+         tiene_trabajo: false,
       },
       shouldUnregister: true,
    })
