@@ -130,6 +130,11 @@ export const ConyugeSchema = z.object({
       })
       .optional()
       .or(z.literal("")), // permite vacío
+   numero_documento_postulante: z.string().min(6, {
+      message: "El número de documento debe tener al menos 6 caracteres.",
+   }).max(10, {
+      message: "El número de documento debe tener como máximo 10 caracteres.",
+   }),
 }).and(tieneTrabajoSchema);
 
 export type ConyugeSchemaType = z.infer<typeof ConyugeSchema>;

@@ -1,49 +1,29 @@
 "use client"
 
-import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react";
-import { format } from "date-fns"
-import { CalendarIcon, Info, Send, Loader2Icon } from "lucide-react"
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils"
-import { toast } from "sonner"
+import { format } from "date-fns"
+import { useRouter } from "next/navigation"
+
+import { CalendarIcon, Loader2Icon, Send, Info } from "lucide-react"
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Select, SelectContent, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Calendar } from "@/components/ui/calendar"
 import { Separator } from "@/components/ui/separator"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import {
-   Card,
-   CardContent,
-   CardDescription,
-   CardHeader,
-   CardTitle,
-} from "@/components/ui/card"
-import {
-   Form,
-   FormControl,
-   FormDescription,
-   FormField,
-   FormItem,
-   FormLabel,
-   FormMessage,
-} from "@/components/ui/form"
-import {
-   Select,
-   SelectContent,
-   SelectTrigger,
-   SelectValue,
-} from "@/components/ui/select"
-import {
-   Popover,
-   PopoverContent,
-   PopoverTrigger,
-} from "@/components/ui/popover"
+import { Checkbox } from "@/components/ui/checkbox"
+import { toast } from "sonner"
 
 import { Loader } from '@/components/loader'
 
 import { usePostulanteForm } from '@/hooks/usePostulanteForm'
 import { PostulanteSchemaType } from '@/schemas/postulanteSchema'
+
 import { tipoDocumento } from '@/constants/tipoDocumento'
 import { sexo } from '@/constants/sexo'
 import { tipoSangre } from '@/constants/tipoSangre'
@@ -115,12 +95,13 @@ export function PostulanteForm({ className, ...props }: React.ComponentProps<"di
 
          // ✅ Redirección condicional según estado_civil
          const estadoCivil = values.estado_civil?.toLowerCase()
+         const cedula = values.numero_documento
 
          setTimeout(() => {
             if (estadoCivil === "casado" || estadoCivil === "union libre") {
-               router.push("http://localhost:3000/postulante-conyuge")
+               router.push(`http://localhost:3000/postulante-conyuge/${cedula}`)
             } else {
-               router.push("http://localhost:3000/vacunas-covid")
+               router.push(`http://localhost:3000/vacunas-covid/${cedula}`)
             }
             form.reset()
          }, 1500)
@@ -144,7 +125,7 @@ export function PostulanteForm({ className, ...props }: React.ComponentProps<"di
          <div className={cn("flex flex-col gap-6", className)} {...props}>
             <Card>
                <CardHeader className="text-start">
-                  <CardTitle className="text-3xl text-primary">Información personal.</CardTitle>
+                  <CardTitle className="text-3xl dark:text-emerald-400 text-emerald-600">Información personal.</CardTitle>
                   <CardDescription className="italic text-md text-muted-foreground">
                      Datos básicos.
                   </CardDescription>

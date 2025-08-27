@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
+import { useRouter } from "next/navigation"
 
 import { CalendarIcon, Loader2Icon, Send, Info } from "lucide-react"
 
@@ -16,6 +17,7 @@ import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Checkbox } from "@/components/ui/checkbox"
+import { toast } from "sonner"
 
 import { useConyugeForm } from '@/hooks/useConyugeForm'
 import { ConyugeSchemaType } from '@/schemas/conyugeSchema'
@@ -23,10 +25,15 @@ import { ConyugeSchemaType } from '@/schemas/conyugeSchema'
 import { tipoDocumento } from '@/constants/tipoDocumento'
 import { useSelectOptions } from "@/hooks/useSelectOptions";
 
-export function PostulanteConyugeForm({ className, ...props }: React.ComponentProps<"div">) {
+interface Props {
+   cedula: string;
+}
+
+export function PostulanteConyugeForm({ cedula }: Props) {
 
    // 1. Define your form.
    const form = useConyugeForm();
+   const router = useRouter();
 
    // 2. Watch form fields.
    const [loading, setLoading] = useState(false);
@@ -35,7 +42,7 @@ export function PostulanteConyugeForm({ className, ...props }: React.ComponentPr
    // 3. Define your select options.
    const selectOptionsTipoDocumento = useSelectOptions(tipoDocumento);
 
-   // 4. Log form errors.
+   // 4. useEffects.
    useEffect(() => {
       if (form.formState.errors) {
          const errors = form.formState.errors;
@@ -45,18 +52,71 @@ export function PostulanteConyugeForm({ className, ...props }: React.ComponentPr
       }
    }, [form.formState.errors]);
 
+   useEffect(() => {
+      form.setValue("numero_documento_postulante", cedula);
+   }, [cedula, form]);
+
+
    // 5. Define a submit handler.
    async function onSubmit(values: ConyugeSchemaType) {
       setLoading(true);
       console.log(values);
+      try {
+         const response = await fetch("http://localhost:4000/api/conyuge", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(values),
+         });
+
+         const data = await response.json();
+         console.log(data);
+
+         if (!response.ok) {
+            // error de backend, pero no 200/201
+            toast.error(data.message || "Error en el servidor");
+            return;
+         }
+
+         // manejar casos esperados
+         switch (data.status) {
+            case 201:
+               toast.success(data.message || "Registro exitoso");
+               setTimeout(() => form.reset(), 1500);
+               break;
+
+            case 200:
+               toast.info(data.message || "Registro actualizado");
+               setTimeout(() => form.reset(), 1500);
+               break;
+
+            default:
+               toast.error(data.message || "Error");
+               break;
+         }
+
+         setTimeout(() => {
+            // router.push("http://localhost:3000/vacunas-covid")
+            form.reset()
+         }, 1500)
+      } catch (error) {
+         console.error("Error al enviar datos:", error);
+         toast.error("Error de conexión", {
+            description: "No se pudo enviar la información al servidor.",
+         });
+      } finally {
+         console.log(">>> finally ejecutado");
+         setTimeout(() => {
+            setLoading(false);
+         }, 1500);
+      }
    }
 
    return (
       <>
-         <div className={cn("flex flex-col gap-6", className)} {...props}>
+         <div className="flex flex-col gap-6">
             <Card>
                <CardHeader className="text-start">
-                  <CardTitle className="text-3xl text-primary">Información personal del conyuge.</CardTitle>
+                  <CardTitle className="text-3xl dark:text-emerald-400 text-emerald-600">Información personal del conyuge.</CardTitle>
                   <CardDescription className="italic text-md text-muted-foreground">
                      Datos básicos.
                   </CardDescription>
@@ -65,6 +125,36 @@ export function PostulanteConyugeForm({ className, ...props }: React.ComponentPr
                   <Form {...form}>
                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                         <div className="grid gap-6">
+                           <div className="grid grid-cols-1 md:grid-cols-1 gap-3">
+                              <div className="grid gap-3">
+                                 <FormField
+                                    control={form.control}
+                                    name="numero_documento_postulante"
+                                    render={({ field }) => (
+                                       <FormItem>
+                                          <FormLabel>Número de documento postulado</FormLabel>
+                                          <FormControl>
+                                             <Input
+                                                type="number"
+                                                placeholder="Ej: 123456789"
+                                                {...field}
+                                                disabled={true}
+                                                className="dark:border-emerald-400 border-emerald-600"
+                                             />
+                                          </FormControl>
+                                          {form.formState.errors.numero_documento_postulante ? (
+                                             <FormMessage />
+                                          ) : (
+                                             <FormDescription className="italic dark:text-emerald-400 text-emerald-600">
+                                                {/* Este campo es obligatorio. */}
+                                             </FormDescription>
+                                          )}
+                                       </FormItem>
+                                    )}
+                                 />
+                              </div>
+                           </div>
+                           <Separator />
                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                               <div className="grid gap-3">
                                  <FormField
@@ -585,14 +675,85 @@ export function PostulanteConyugeForm({ className, ...props }: React.ComponentPr
                                           )}
                                        />
                                     </div>
+                                    <div className="grid gap-3">
+                                       <FormField
+                                          control={form.control}
+                                          name="telefono_empresa"
+                                          render={({ field }) => (
+                                             <FormItem>
+                                                <FormLabel>Teléfono de la empresa</FormLabel>
+                                                <FormControl>
+                                                   <Input
+                                                      type="text"
+                                                      {...field}
+                                                      value={field.value ?? ""}
+                                                      placeholder="Ingresa el tipo de la empresa"
+                                                   />
+                                                </FormControl>
+                                                {"telefono_empresa" in form.formState.errors ? (
+                                                   <FormMessage />
+                                                ) : (
+                                                   <FormDescription className="text-sm italic dark:text-emerald-400 text-emerald-600">
+                                                      Campo obligatorio.
+                                                   </FormDescription>
+                                                )}
+                                             </FormItem>
+                                          )}
+                                       />
+                                    </div>
+                                    <div className="grid gap-3">
+                                       <FormField
+                                          control={form.control}
+                                          name="ciudad_empresa"
+                                          render={({ field }) => (
+                                             <FormItem>
+                                                <FormLabel>Ciudad de la empresa</FormLabel>
+                                                <FormControl>
+                                                   <Input
+                                                      type="text"
+                                                      {...field}
+                                                      value={field.value ?? ""}
+                                                      placeholder="Ingresa la ciudad de la empresa"
+                                                   />
+                                                </FormControl>
+                                                {"ciudad_empresa" in form.formState.errors ? (
+                                                   <FormMessage />
+                                                ) : (
+                                                   <FormDescription className="text-sm italic dark:text-emerald-400 text-emerald-600">
+                                                      Campo obligatorio.
+                                                   </FormDescription>
+                                                )}
+                                             </FormItem>
+                                          )}
+                                       />
+                                    </div>
+                                    <div className="grid gap-3">
+                                       <FormField
+                                          control={form.control}
+                                          name="cargo_conyuge_empresa"
+                                          render={({ field }) => (
+                                             <FormItem>
+                                                <FormLabel>Cargo en la empresa</FormLabel>
+                                                <FormControl>
+                                                   <Input
+                                                      type="text"
+                                                      {...field}
+                                                      value={field.value ?? ""}
+                                                      placeholder="Ingresa el cargo en la empresa"
+                                                   />
+                                                </FormControl>
+                                                {"cargo_conyuge_empresa" in form.formState.errors ? (
+                                                   <FormMessage />
+                                                ) : (
+                                                   <FormDescription className="text-sm italic dark:text-emerald-400 text-emerald-600">
+                                                      Campo obligatorio.
+                                                   </FormDescription>
+                                                )}
+                                             </FormItem>
+                                          )}
+                                       />
+                                    </div>
                                  </>
-
-                                 // direccion_empresa
-                                 // tipo_de_empresa
-                                 // telefono_empresa
-                                 // ciudad_empresa
-                                 // cargo_conyuge_empresa
-
                               )}
                            </div>
                            <Separator />

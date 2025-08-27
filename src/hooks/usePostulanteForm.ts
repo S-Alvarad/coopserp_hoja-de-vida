@@ -30,7 +30,7 @@ export function usePostulanteForm() {
          estado_civil: "CASADO",
          personas_a_cargo: "0",
          celular: "3192976668",
-         correo: "steven.alvarado@example.com",
+         correo: "stevenalvarado@example.com",
          telefono: "",
          tiene_hijos: false,
       },

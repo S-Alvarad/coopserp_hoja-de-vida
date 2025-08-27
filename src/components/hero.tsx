@@ -61,7 +61,7 @@ const Hero = ({
                 </a>
               </Badge>
             )}
-            <h1 className="my-6 text-pretty text-4xl text-start font-bold lg:text-6xl" style={{color: "#099584"}}>
+            <h1 className="my-6 text-pretty text-4xl text-start font-bold lg:text-6xl dark:text-emerald-400 text-emerald-600">
               {heading}
             </h1>
             <p className="text-muted-foreground mb-8 max-w-xl lg:text-xl">
@@ -69,7 +69,7 @@ const Hero = ({
             </p>
             <div className="flex w-full flex-col justify-center gap-2 sm:flex-row lg:justify-start">
               {buttons.primary && (
-                <Button asChild className="w-full sm:w-auto" style={{backgroundColor: "#099584", color: "white"}}>
+                <Button asChild className="w-full sm:w-auto dark:bg-emerald-400 bg-emerald-600 ">
                   <a href={buttons.primary.url}>
                     {buttons.primary.text}
                     <ArrowRight className="size-4" />

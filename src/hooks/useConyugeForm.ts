@@ -21,7 +21,11 @@ export function useConyugeForm() {
          direccion_residencia: "Calle 33b #12A 15",
          ciudad_residencia: "cali",
          departamento_residencia: "valle del cauca",
+         celular: "3192976668",
+         correo: "stevenalvarado@example.com",
+         telefono: "123456789",
          tiene_trabajo: false,
+         numero_documento_postulante: ""
       },
       shouldUnregister: true,
    })
