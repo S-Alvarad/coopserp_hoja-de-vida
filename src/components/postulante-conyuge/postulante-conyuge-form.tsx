@@ -1,9 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react";
 
 import { CalendarIcon, Loader2Icon, Send, Info } from "lucide-react"
 
@@ -19,6 +19,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "sonner"
 
+import { Loader } from '@/components/loader'
+
 import { useConyugeForm } from '@/hooks/useConyugeForm'
 import { ConyugeSchemaType } from '@/schemas/conyugeSchema'
 
@@ -29,7 +31,7 @@ interface Props {
    cedula: string;
 }
 
-export function PostulanteConyugeForm({ cedula }: Props) {
+export function PostulanteConyugeForm({ cedula, className, ...props }: Props & React.ComponentProps<"div">) {
 
    // 1. Define your form.
    const form = useConyugeForm();
@@ -56,48 +58,44 @@ export function PostulanteConyugeForm({ cedula }: Props) {
       form.setValue("numero_documento_postulante", cedula);
    }, [cedula, form]);
 
-
    // 5. Define a submit handler.
    async function onSubmit(values: ConyugeSchemaType) {
       setLoading(true);
-      console.log(values);
+      // console.log(values);
       try {
          const response = await fetch("http://localhost:4000/api/conyuge", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(values),
          });
-
          const data = await response.json();
-         console.log(data);
-
-         if (!response.ok) {
-            // error de backend, pero no 200/201
-            toast.error(data.message || "Error en el servidor");
-            return;
-         }
+         // console.log(data);
 
          // manejar casos esperados
-         switch (data.status) {
+         switch (response.status) {
             case 201:
                toast.success(data.message || "Registro exitoso");
                setTimeout(() => form.reset(), 1500);
                break;
-
             case 200:
                toast.info(data.message || "Registro actualizado");
                setTimeout(() => form.reset(), 1500);
                break;
-
+            case 404:
+               toast.error(data.message || "Postulante no encontrado");
+               setTimeout(() => {
+                  router.push("/postulante");
+               }, 1500);
+               return;  // 👈 esto evita que baje al setTimeout global
             default:
-               toast.error(data.message || "Error");
+               toast.error(data.message || "Error en el servidor");
                break;
          }
-
+         // 👇 solo llega aquí si response.status NO fue 404
          setTimeout(() => {
-            // router.push("http://localhost:3000/vacunas-covid")
-            form.reset()
-         }, 1500)
+            router.push(`/vacunas-covid/${cedula}`);
+            form.reset();
+         }, 1500);
       } catch (error) {
          console.error("Error al enviar datos:", error);
          toast.error("Error de conexión", {
@@ -113,7 +111,8 @@ export function PostulanteConyugeForm({ cedula }: Props) {
 
    return (
       <>
-         <div className="flex flex-col gap-6">
+         {loading && <Loader />}
+         <div className={cn("flex flex-col gap-6", className)} {...props}>
             <Card>
                <CardHeader className="text-start">
                   <CardTitle className="text-3xl dark:text-emerald-400 text-emerald-600">Información personal del conyuge.</CardTitle>

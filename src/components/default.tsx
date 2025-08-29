@@ -8,7 +8,7 @@ export function PostulanteForm({ className, ...props }: React.ComponentProps<"di
 
    // 3. Define your select options.
 
-   // 4. Log form errors.
+   // 4. useEffects.
 
    // 5. Define a submit handler.
    function onSubmit() {
@@ -17,7 +17,7 @@ export function PostulanteForm({ className, ...props }: React.ComponentProps<"di
 
    return (
       <>
-         <h1>PostulanteForm</h1>
+         <h1>default</h1>
       </>
    )
 }

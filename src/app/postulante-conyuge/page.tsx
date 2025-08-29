@@ -20,7 +20,7 @@ export default function RedirectPostulanteConyugePage() {
 
    const handleSubmit = () => {
       if (cedula.trim()) {
-         router.push(`/vacunas-covid/${cedula}`);
+         router.push(`/postulante-conyuge/${cedula}`);
          setOpen(false);
       } else {
          // Opcional: Maneja error si el campo está vacío, como mostrar un toast.

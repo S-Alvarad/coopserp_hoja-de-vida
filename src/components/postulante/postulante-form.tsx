@@ -46,7 +46,7 @@ export function PostulanteForm({ className, ...props }: React.ComponentProps<"di
    const selectOptionsTipoSangre = useSelectOptions(tipoSangre);
    const selectOptionsEstadoCivil = useSelectOptions(estadoCivil);
 
-   // 4. Log form errors.
+   // 4. useEffects.
    useEffect(() => {
       if (form.formState.errors) {
          const errors = form.formState.errors;
@@ -66,42 +66,36 @@ export function PostulanteForm({ className, ...props }: React.ComponentProps<"di
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(values),
          });
-
          const data = await response.json();
          // console.log(data);
-
          if (!response.ok) {
             // error de backend, pero no 200/201
             toast.error(data.message || "Error en el servidor");
             return;
          }
-
          // manejar casos esperados
          switch (data.status) {
             case 201:
                toast.success(data.message || "Registro exitoso");
                setTimeout(() => form.reset(), 1500);
                break;
-
             case 200:
                toast.info(data.message || "Registro actualizado");
                setTimeout(() => form.reset(), 1500);
                break;
-
             default:
                toast.error(data.message || "Error");
                break;
          }
-
          // ✅ Redirección condicional según estado_civil
          const estadoCivil = values.estado_civil?.toLowerCase()
          const cedula = values.numero_documento
 
          setTimeout(() => {
             if (estadoCivil === "casado" || estadoCivil === "union libre") {
-               router.push(`http://localhost:3000/postulante-conyuge/${cedula}`)
+               router.push(`/postulante-conyuge/${cedula}`)
             } else {
-               router.push(`http://localhost:3000/vacunas-covid/${cedula}`)
+               router.push(`/vacunas-covid/${cedula}`)
             }
             form.reset()
          }, 1500)
