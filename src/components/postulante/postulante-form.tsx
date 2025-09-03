@@ -36,8 +36,8 @@ export function PostulanteForm({ className, ...props }: React.ComponentProps<"di
    const form = usePostulanteForm();
 
    // 2. Watch form fields.
-   const tieneHijos = form.watch("tiene_hijos")
    const [loading, setLoading] = useState(false);
+   const tieneHijos = form.watch("tiene_hijos")
    const router = useRouter();
 
    // 3. Define your select options.
@@ -59,58 +59,59 @@ export function PostulanteForm({ className, ...props }: React.ComponentProps<"di
    // 5. Define a submit handler.
    async function onSubmit(values: PostulanteSchemaType) {
       setLoading(true);
+      console.log(values);
 
-      try {
-         const response = await fetch("http://localhost:4000/api/postulante", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(values),
-         });
-         const data = await response.json();
-         // console.log(data);
-         if (!response.ok) {
-            // error de backend, pero no 200/201
-            toast.error(data.message || "Error en el servidor");
-            return;
-         }
-         // manejar casos esperados
-         switch (data.status) {
-            case 201:
-               toast.success(data.message || "Registro exitoso");
-               setTimeout(() => form.reset(), 1500);
-               break;
-            case 200:
-               toast.info(data.message || "Registro actualizado");
-               setTimeout(() => form.reset(), 1500);
-               break;
-            default:
-               toast.error(data.message || "Error");
-               break;
-         }
-         // ✅ Redirección condicional según estado_civil
-         const estadoCivil = values.estado_civil?.toLowerCase()
-         const cedula = values.numero_documento
+      // try {
+      //    const response = await fetch("http://localhost:4000/api/postulantes", {
+      //       method: "POST",
+      //       headers: { "Content-Type": "application/json" },
+      //       body: JSON.stringify(values),
+      //    });
+      //    const data = await response.json();
+      //    console.log(data);
+      //    // if (!response.ok) {
+      //    //    // error de backend, pero no 200/201
+      //    //    toast.error(data.message || "Error en el servidor");
+      //    //    return;
+      //    // }
+      //    // // manejar casos esperados
+      //    // switch (data.status) {
+      //    //    case 201:
+      //    //       toast.success(data.message || "Registro exitoso");
+      //    //       setTimeout(() => form.reset(), 1500);
+      //    //       break;
+      //    //    case 200:
+      //    //       toast.info(data.message || "Registro actualizado");
+      //    //       setTimeout(() => form.reset(), 1500);
+      //    //       break;
+      //    //    default:
+      //    //       toast.error(data.message || "Error");
+      //    //       break;
+      //    // }
+      //    // // ✅ Redirección condicional según estado_civil
+      //    // const estadoCivil = values.estado_civil?.toLowerCase()
+      //    // const cedula = values.numero_documento
 
-         setTimeout(() => {
-            if (estadoCivil === "casado" || estadoCivil === "union libre") {
-               router.push(`/postulante-conyuge/${cedula}`)
-            } else {
-               router.push(`/vacunas-covid/${cedula}`)
-            }
-            form.reset()
-         }, 1500)
-      } catch (error) {
-         console.error("Error al enviar datos:", error);
-         toast.error("Error de conexión", {
-            description: "No se pudo enviar la información al servidor.",
-         });
-      } finally {
-         // esto SIEMPRE se ejecuta (éxito o error)
-         console.log(">>> finally ejecutado");
-         setTimeout(() => {
-            setLoading(false);
-         }, 1500);
-      }
+      //    // setTimeout(() => {
+      //    //    if (estadoCivil === "casado" || estadoCivil === "union_libre") {
+      //    //       router.push(`/postulante-conyuge/${cedula}`)
+      //    //    } else {
+      //    //       router.push(`/vacunas-covid/${cedula}`)
+      //    //    }
+      //    //    form.reset()
+      //    // }, 1500)
+      // } catch (error) {
+      //    console.error("Error al enviar datos:", error);
+      //    toast.error("Error de conexión", {
+      //       description: "No se pudo enviar la información al servidor.",
+      //    });
+      // } finally {
+      //    // esto SIEMPRE se ejecuta (éxito o error)
+      //    console.log(">>> finally ejecutado");
+      //    setTimeout(() => {
+      //       setLoading(false);
+      //    }, 1500);
+      // }
    }
 
    return (
@@ -725,7 +726,7 @@ export function PostulanteForm({ className, ...props }: React.ComponentProps<"di
                                        <FormItem>
                                           <FormLabel>Teléfono</FormLabel>
                                           <FormControl>
-                                             <Input type="tel" placeholder="Ej: 3001234567" {...field} />
+                                             <Input type="number" placeholder="Ej: 3001234567" {...field} />
                                           </FormControl>
                                           {form.formState.errors.telefono ? (
                                              <FormMessage />
@@ -774,7 +775,10 @@ export function PostulanteForm({ className, ...props }: React.ComponentProps<"di
                                                 <Input
                                                    type="number"
                                                    {...field}
-                                                   value={field.value ?? ""}
+                                                   value={Number.isNaN(field.value) ? "" : field.value ?? ""}
+                                                   onChange={(e) =>
+                                                      field.onChange(e.target.value === "" ? undefined : e.target.valueAsNumber)
+                                                   }
                                                    placeholder="Ingresa No° numero de hijos"
                                                 />
                                              </FormControl>
@@ -791,6 +795,7 @@ export function PostulanteForm({ className, ...props }: React.ComponentProps<"di
                                  </div>
                               )}
                            </div>
+                           <pre>{JSON.stringify(form.getValues(), null, 2)}</pre>
                            <Button type="submit" className="w-full text-white" disabled={loading}>
                               {loading ? (
                                  <>

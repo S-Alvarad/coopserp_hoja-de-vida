@@ -3,6 +3,8 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { PostulanteSchema, PostulanteSchemaType } from '@/schemas/postulanteSchema'
 
 export function usePostulanteForm() {
+   // Configuramos React Hook Form con Zod
+
    return useForm<PostulanteSchemaType>({
       mode: "onChange",
       resolver: zodResolver(PostulanteSchema),
@@ -35,5 +37,5 @@ export function usePostulanteForm() {
          tiene_hijos: false,
       },
       shouldUnregister: true,
-   })
+   });
 }

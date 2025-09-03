@@ -4,17 +4,16 @@ import { sexo } from '@/constants/sexo'
 import { tipoSangre } from '@/constants/tipoSangre'
 import { estadoCivil } from '@/constants/estadoCivil'
 
+// 1. Definimos un esquema tipado con Zod
 const tieneHijosSchema = z.discriminatedUnion("tiene_hijos", [
    z.object({
-      tiene_hijos: z.literal(true),
-      numero_hijos: z.string({
-         message: "Este campo es obligatorio."
-      }).refine(val => !isNaN(Number(val)) && Number(val) > 0, {
-         message: "Este campo es obligatorio y mayor a 0.",
-      }),
+      tiene_hijos: z.literal(false),
    }),
    z.object({
-      tiene_hijos: z.literal(false),
+      tiene_hijos: z.literal(true),
+      numero_hijos: z.number({
+         message: "Este campo debe ser mayor que 0."
+      }).int().nonnegative("No puede ser negativo").min(1, "Debe tener al menos 1 hijo.")
    })
 ]);
 
@@ -125,10 +124,11 @@ export const PostulanteSchema = z.object({
       estadoCivil.map(option => option.value) as [string, ...string[]], {
       message: "Seleccione su estado civil."
    }),
-   personas_a_cargo: z.string().optional()
-      .refine((val) => val === undefined || val === "" || (!isNaN(Number(val)) && Number(val) >= 0 && Number(val) <= 10), {
-         message: "Debe ser un número entre 0 y 10",
-      }),
+   personas_a_cargo: z.string().min(1, {
+      message: "Este campo es obligatorio y debe tener al menos 1 carácter."
+   }).max(10, {
+      message: "Este campo debe tener como máximo 10 caracteres."
+   }),
    celular: z.string().min(10, {
       message: "El celular debe tener minimo 10 carácteres."
    }).max(10, {
@@ -149,4 +149,8 @@ export const PostulanteSchema = z.object({
       .or(z.literal("")), // permite vacío
 }).and(tieneHijosSchema);
 
+// 2. Inferimos el tipo de datos
 export type PostulanteSchemaType = z.infer<typeof PostulanteSchema>;
+
+// 3. Configuramos React Hook Form con Zod
+// src/hooks/usePostulanteForm.ts
