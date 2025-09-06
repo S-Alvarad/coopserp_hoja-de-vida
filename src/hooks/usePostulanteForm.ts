@@ -2,9 +2,8 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { PostulanteSchema, PostulanteSchemaType } from '@/schemas/postulanteSchema'
 
+// 3. Configuramos React Hook Form con Zod
 export function usePostulanteForm() {
-   // Configuramos React Hook Form con Zod
-
    return useForm<PostulanteSchemaType>({
       mode: "onChange",
       resolver: zodResolver(PostulanteSchema),
